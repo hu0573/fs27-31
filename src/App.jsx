@@ -1,35 +1,45 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
+import "./App.css";
+import Posts from "./components/Posts";
+import Pagination from "./components/Pagination";
+import axios from "axios";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerpage = 10;
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      const url = "https://jsonplaceholder.typicode.com/posts";
+      const res = await axios.get(url);
+      console.log("res", res);
+      setPosts(res.data);
+      setLoading(false);
+    };
+    fetchPosts();
+  }, []);
 
+  const indexOfLastPost = currentPage * postsPerpage;
+  const indexOfFirstPost = indexOfLastPost - postsPerpage;
+  const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="container">
+      <h1 className="text-primary">My Bolog</h1>
+      <Posts currentPosts={currentPosts} loading={loading} />
+      <Pagination
+        paginate={paginate}
+        postsPerpage={postsPerpage}
+        currentPage={currentPage}
+        totalPosts={posts.length}
+      />
+    </div>
+  );
 }
 
-export default App
+export default App;
